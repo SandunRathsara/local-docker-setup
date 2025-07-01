@@ -1,0 +1,34 @@
+services:
+  kali:
+    image: kalilinux/kali-rolling
+    container_name: kali
+    stdin_open: true
+    tty: true
+    volumes:
+      - ~/Developer/volumes/kali:/root/local
+
+  postgres:
+    image: postgres:15
+    container_name: postgres_dev
+    environment:
+      POSTGRES_DB: devdb
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ~/Developer/volumes/pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7
+    container_name: mongodb_dev
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpass
+      MONGO_INITDB_DATABASE: devdb
+    ports:
+      - "27017:27017"
+    volumes:
+      - ~/Developer/volumes/mngdata:/data/db
+    restart: unless-stopped
