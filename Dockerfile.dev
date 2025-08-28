@@ -1,0 +1,67 @@
+# ╔════════════════════════════════════════════════════════════════════════════╗
+# ║                                                                            ║
+# ║  This docker file will be used to run node projects in amd64 architecture  ║
+# ║                                                                            ║
+# ╚════════════════════════════════════════════════════════════════════════════╝
+# Use Ubuntu 24.04 as base image
+FROM ubuntu:24.04
+
+# Set environment variables to prevent interactive prompts
+# Set environment variable to prevent interactive prompts during package installation
+# This ensures that apt-get commands run non-interactively in the Docker build process
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Accept NODE_VERSION as a build argument (default to 16.20.2 if not provided)
+ARG NODE_VERSION=22
+ENV NODE_VERSION=${NODE_VERSION}
+
+# Update package list and install essential tools
+RUN apt-get update && apt-get install -y \
+  curl \
+  wget \
+  git \
+  build-essential \
+  python3 \
+  python3-pip \
+  ca-certificates \
+  gnupg \
+  lsb-release \
+  sudo \
+  && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user for development with sudo privileges first
+RUN useradd -m -s /bin/bash developer && \
+  echo 'developer ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Set working directory
+WORKDIR /app
+
+# Set ownership of app directory
+RUN chown -R developer:developer /app
+
+# Switch to non-root user
+USER developer
+
+# Set up NVM environment for developer user
+ENV NVM_DIR="/home/developer/.nvm"
+
+# Install nvm, Node & yarn as developer user
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash \
+  && export NVM_DIR="/home/developer/.nvm" \
+  && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
+  && [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" \
+  && nvm install $NODE_VERSION \
+  && nvm use $NODE_VERSION \
+  && nvm alias default $NODE_VERSION
+
+# Add Node.js to PATH for subsequent layers
+ENV PATH="/home/developer/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
+
+# Enable corepack and verify Node.js is accessible
+RUN bash -c "source $NVM_DIR/nvm.sh && corepack enable && node --version && npm --version && yarn --version"
+
+# Copy package files for dependency installation
+COPY --chown=developer:developer package*.json ./
+
+# Expose the development server port
+EXPOSE 3000

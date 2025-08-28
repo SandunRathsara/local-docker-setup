@@ -7,6 +7,27 @@ services:
     volumes:
       - ~/Developer/volumes/kali:/root/local
 
+  ubuntu:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        NODE_VERSION: ${NODE_VERSION:-18}
+    container_name: ubuntu
+    stdin_open: true
+    tty: true
+    environment:
+      # Development environment variables
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - FAST_REFRESH=true
+      - GENERATE_SOURCEMAP=true
+      - BROWSER=none
+      # This version is important. this is the version that you project will run on.
+      - NODE_VERSION=${NODE_VERSION:-18}
+    volumes:
+      - ~/Developer/volumes/ubuntu:/root/local
+
   postgres:
     image: postgres:latest
     container_name: postgres
