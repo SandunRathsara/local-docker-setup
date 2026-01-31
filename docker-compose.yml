@@ -1,32 +1,32 @@
 services:
-  kali:
-    image: kalilinux/kali-rolling
-    container_name: kali
-    stdin_open: true
-    tty: true
-    volumes:
-      - ~/Developer/volumes/kali:/root/local
+  # kali:
+  #   image: kalilinux/kali-rolling
+  #   container_name: kali
+  #   stdin_open: true
+  #   tty: true
+  #   volumes:
+  #     - /Users/alpha/Developer/configs/local-docker-setup/volumes/kali:/root/local
 
-  ubuntu:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-      args:
-        NODE_VERSION: ${NODE_VERSION:-18}
-    container_name: ubuntu
-    stdin_open: true
-    tty: true
-    environment:
-      # Development environment variables
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true
-      - FAST_REFRESH=true
-      - GENERATE_SOURCEMAP=true
-      - BROWSER=none
-      # This version is important. this is the version that you project will run on.
-      - NODE_VERSION=${NODE_VERSION:-18}
-    volumes:
-      - ~/Developer/volumes/ubuntu:/root/local
+  # ubuntu:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.dev
+  #     args:
+  #       NODE_VERSION: ${NODE_VERSION:-18}
+  #   container_name: ubuntu
+  #   stdin_open: true
+  #   tty: true
+  #   environment:
+  #     # Development environment variables
+  #     - NODE_ENV=development
+  #     - CHOKIDAR_USEPOLLING=true
+  #     - FAST_REFRESH=true
+  #     - GENERATE_SOURCEMAP=true
+  #     - BROWSER=none
+  #     # This version is important. this is the version that you project will run on.
+  #     - NODE_VERSION=${NODE_VERSION:-18}
+  #   volumes:
+  #     - /Users/alpha/Developer/configs/local-docker-setup/volumes/ubuntu:/root/local
 
   postgres:
     image: postgres:latest
@@ -38,17 +38,31 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ~/Developer/volumes/pgdata:/var/lib/postgresql/data
+      - /Users/alpha/Developer/configs/local-docker-setup/volumes/pgdata:/var/lib/postgresql
     restart: unless-stopped
 
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
-    ports:
-      - "27017:27017"
-    volumes:
-      - ~/Developer/volumes/mngdata:/data/db
+  # mongodb:
+  #   image: mongo:latest
+  #   container_name: mongodb
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: admin
+  #     MONGO_INITDB_ROOT_PASSWORD: admin
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - /Users/alpha/Developer/configs/local-docker-setup/volumes/mngdata:/data/db
+  #   restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    container_name: redis
     restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - /Users/alpha/Developer/configs/local-docker-setup/volumes/redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
